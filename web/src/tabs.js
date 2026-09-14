@@ -105,7 +105,9 @@ export function centerLine(n) {
 
 export function closeTab(i) {
   clearSelectAll();
+  const wasActive = i === S.active;
   const [closed] = S.tabs.splice(i, 1);
+  if (wasActive) hidePDF();
   if (closed) {
     if (closed.path) {
       // The active tab's scrollTop is only saved on switch, so read the live one.

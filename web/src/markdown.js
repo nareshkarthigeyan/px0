@@ -23,6 +23,11 @@ let mdShown = null;  // doc the preview is showing, null while it is hidden
 let mdDrawn = null;  // doc whose HTML is in the article; drawing can wait on a fetch
 let mdGen = 0;
 
+function mdInvalidateRequest(d) {
+  d.mdReqGen = (d.mdReqGen || 0) + 1;
+  d.mdReq = null;
+}
+
 export function previewing(d = doc_()) {
   return !!(d && d.markdown && S.mdPreview && !d.mdError && !d.diffMode);
 }
@@ -43,10 +48,20 @@ export function syncPreview() {
 async function drawPreview(d) {
   const gen = ++mdGen;
   if (d.mdHtml === undefined) {
+    let req = d.mdReq;
+    let reqGen = d.mdReqGen || 0;
+    if (!req) {
+      reqGen++;
+      d.mdReqGen = reqGen;
+      req = api('/api/markdown', { path: d.path });
+      d.mdReq = req;
+    }
     try {
-      d.mdReq = d.mdReq || api('/api/markdown', { path: d.path });
-      d.mdHtml = (await d.mdReq).html;
+      const out = await req;
+      if (d.mdReq !== req || d.mdReqGen !== reqGen) return;
+      d.mdHtml = out.html;
     } catch (e) {
+      if (d.mdReq !== req || d.mdReqGen !== reqGen) return;
       d.mdError = e.message; // this tab falls back to its source
       if (gen === mdGen && mdShown === d) {
         showToast('!', 'No preview for ' + d.name + ': ' + e.message);
@@ -55,7 +70,7 @@ async function drawPreview(d) {
       }
       return;
     } finally {
-      d.mdReq = null;
+      if (d.mdReq === req && d.mdReqGen === reqGen) d.mdReq = null;
     }
     if (gen !== mdGen || mdShown !== d) return;
   }
@@ -78,11 +93,13 @@ export function togglePreview() {
   if (previewing(d)) {
     const line = mdDrawn === d ? previewTopLine() : 1;
     mdSetPref(false);
+    mdInvalidateRequest(d);
     d.mdHtml = undefined;
     syncPreview();
     sourceToLine(line);
   } else {
     d.mdError = '';
+    mdInvalidateRequest(d);
     d.mdHtml = undefined;
     d.mdLine = sourceTopLine();
     mdSetPref(true);
