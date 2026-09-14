@@ -289,6 +289,23 @@ func TestFileAndSearchAndDef(t *testing.T) {
 	}
 }
 
+func TestFilePreviewKinds(t *testing.T) {
+	s, root := newTestServer(t)
+	if err := os.WriteFile(filepath.Join(root, "diagram.png"), []byte{0x89, 'P', 'N', 'G'}, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "guide.pdf"), []byte("%PDF-1.7\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if code, body := get(t, s, "/api/file?path=diagram.png"); code != http.StatusOK || body["image"] != true {
+		t.Fatalf("png open = %d %v, want image preview marker", code, body)
+	}
+	if code, body := get(t, s, "/api/file?path=guide.pdf"); code != http.StatusOK || body["pdf"] != true {
+		t.Fatalf("pdf open = %d %v, want pdf preview marker", code, body)
+	}
+}
+
 func TestChunkedReadsCoverWholeFile(t *testing.T) {
 	root := t.TempDir()
 	var sb strings.Builder

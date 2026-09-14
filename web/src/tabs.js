@@ -34,6 +34,10 @@ export async function openFile(path, opts = {}) {
       showImage(path);
       return;
     }
+    if (j.pdf) {
+      showPDF(path);
+      return;
+    }
     const d = {
       path, name: path.split('/').pop(), lang: j.lang, total: j.total, maxCols: j.maxCols,
       size: j.size, lines: new Array(j.total), chunks: new Set([start / CHUNK]),
@@ -56,6 +60,7 @@ export async function openFile(path, opts = {}) {
 
   $('#empty').hidden = true;
   hideImage();
+  hidePDF();
   syncPreview();
   syncDiffView();
   if (!S.at || S.at.path !== d.path) S.at = null;
@@ -100,7 +105,9 @@ export function centerLine(n) {
 
 export function closeTab(i) {
   clearSelectAll();
+  const wasActive = i === S.active;
   const [closed] = S.tabs.splice(i, 1);
+  if (wasActive) hidePDF();
   if (closed) {
     if (closed.path) {
       // The active tab's scrollTop is only saved on switch, so read the live one.
@@ -117,9 +124,13 @@ export function closeTab(i) {
     closed.pending?.clear?.();
     closed.refining?.clear?.();
     closed.outline = null;
+    closed.mdHtml = undefined;
+    closed.mdReq = null;
   }
   if (S.tabs.length === 0) {
     S.active = -1;
+    hideImage();
+    hidePDF();
     syncPreview();
     syncDiffView();
     rowsEl.innerHTML = ''; sizer.style.height = '0px';
@@ -162,6 +173,8 @@ export function switchTab(i) {
   const prev = doc_();
   if (prev) prev.scrollTop = vp.scrollTop;
   S.active = i;
+  hideImage();
+  hidePDF();
   syncPreview();
   syncDiffView();
   clearFind();
@@ -185,6 +198,7 @@ export function drawCrumbs() {
 
 export function showImage(path) {
   hideImage();
+  hidePDF();
   const box = document.createElement('div');
   box.id = 'imgview';
   box.innerHTML = '<img src="/api/raw?path=' + encodeURIComponent(path) + '" alt="">';
@@ -194,6 +208,21 @@ export function showImage(path) {
 
 export function hideImage() {
   const b = $('#imgview');
+  if (b) b.remove();
+}
+
+export function showPDF(path) {
+  hideImage();
+  hidePDF();
+  const box = document.createElement('div');
+  box.id = 'pdfview';
+  box.innerHTML = '<iframe src="/api/raw?path=' + encodeURIComponent(path) + '#toolbar=1&view=FitH" title="' + esc(path) + '" loading="lazy"></iframe>';
+  editor.appendChild(box);
+  $('#empty').hidden = true;
+}
+
+export function hidePDF() {
+  const b = $('#pdfview');
   if (b) b.remove();
 }
 

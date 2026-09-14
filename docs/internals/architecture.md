@@ -61,7 +61,7 @@ The server is implemented in [`server.go`](../../server.go) using Go's standard 
 | `/api/meta`           | `GET`  | Workspace metadata (root path, file count, index duration, git status)  | JSON (`{root, name, files, build_ms, git}`)|
 | `/api/metrics`        | `GET`  | Runtime memory and GC stats (`Alloc`, `Sys`, `NumGC`, etc.)             | JSON                                       |
 | `/api/tree`           | `GET`  | Directory contents for the sidebar file explorer (`?dir=path`)          | JSON array of `Node` objects               |
-| `/api/file`           | `GET`  | Windowed, highlighted source file lines (`?path=...&start=0&count=500`) | JSON (`{lines, total, refine, markdown}`)  |
+| `/api/file`           | `GET`  | Windowed source payload (text, image, or PDF marker by extension)        | JSON (`{lines, total, refine, markdown}` or `{image:true}` / `{pdf:true}`) |
 | `/api/raw`            | `GET`  | Raw, unhighlighted file content for whole-file copies and preview assets| `text/plain` or binary                     |
 | `/api/markdown`       | `GET`  | Converted HTML preview of `.md` / `.markdown` files via goldmark        | JSON (`{path, html}`)                      |
 | `/api/find`           | `GET`  | Fast fuzzy match against all indexed workspace paths (`?q=...`)         | JSON array of `FuzzyResult` objects        |
