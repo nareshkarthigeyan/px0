@@ -78,10 +78,12 @@ export function togglePreview() {
   if (previewing(d)) {
     const line = mdDrawn === d ? previewTopLine() : 1;
     mdSetPref(false);
+    d.mdHtml = undefined;
     syncPreview();
     sourceToLine(line);
   } else {
     d.mdError = '';
+    d.mdHtml = undefined;
     d.mdLine = sourceTopLine();
     mdSetPref(true);
     syncPreview();

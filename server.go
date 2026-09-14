@@ -450,6 +450,10 @@ var imageExt = map[string]bool{
 	".svg": true, ".ico": true, ".bmp": true, ".avif": true,
 }
 
+var pdfExt = map[string]bool{
+	".pdf": true,
+}
+
 func (s *Server) handleFile(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	abs, rel, ok := s.resolvePath(q.Get("path"))
@@ -464,6 +468,10 @@ func (s *Server) handleFile(w http.ResponseWriter, r *http.Request) {
 	}
 	if imageExt[strings.ToLower(filepath.Ext(rel))] {
 		writeJSON(w, map[string]any{"path": rel, "image": true, "size": st.Size()})
+		return
+	}
+	if pdfExt[strings.ToLower(filepath.Ext(rel))] {
+		writeJSON(w, map[string]any{"path": rel, "pdf": true, "size": st.Size()})
 		return
 	}
 

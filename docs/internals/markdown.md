@@ -242,7 +242,7 @@ Hover cards, Ctrl+click definitions and the selection bar listen on `#viewport`.
 - Files over 4 MB are not previewed.
 - Fences over 256 KB and fences without a language are not highlighted.
 - Mermaid diagrams and math render as code blocks.
-- The preview does not reload when the file changes on disk. Close and reopen the tab.
+- The preview does not auto-refresh while it stays open. Toggle Preview/Source (Alt+M) to re-render from disk.
 - Images that load after a scroll position is restored can push content down.
 - Relative images in a Markdown file outside the workspace (opened through a language server) do not load, because `/api/raw` accepts only workspace paths.
 - The selection bar actions (Copy Ref, Copy for Agent, Find Usages) do not act on text selected in the preview.
